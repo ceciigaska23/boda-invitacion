@@ -34,11 +34,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     debugLog('Script URL configurada:', GOOGLE_SCRIPT_URL);
 
-    // **NUEVA LÍNEA PARA LA ANIMACIÓN DE ENTRADA**
-    document.querySelector('.invitation-container').classList.add('visible');
-
-    // **NUEVA LÍNEA PARA INICIAR LA MÚSICA AUTOMÁTICAMENTE**
-    startMusic();
+    // Ocultar la pantalla de bienvenida y comenzar la invitación
+    const welcomeScreen = document.getElementById('welcomeScreen');
+    welcomeScreen.addEventListener('click', function() {
+        welcomeScreen.classList.add('hidden'); // Ocultar la pantalla
+        document.querySelector('.invitation-container').classList.add('visible'); // Mostrar la invitación
+        startMusic(); // Iniciar la música después del primer clic
+    }, { once: true });
 });
 
 // Crear panel de debug
