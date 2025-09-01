@@ -209,6 +209,7 @@ body {
     border: 1px solid #f0e6d6;
     position: relative;
     overflow: hidden;
+    color: #444;
 }
 
 .location-info::before {
@@ -233,6 +234,7 @@ body {
 .location-details {
     color: #555;
     line-height: 1.8;
+    font-weight: 400;
 }
 
 .map-button {
@@ -263,6 +265,21 @@ body {
     border: 1px solid #f0e6d6;
     position: relative;
     overflow: hidden;
+    color: #444;
+}
+
+.qr-section p {
+    color: #555;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.6;
+    text-align: center;
+    margin: 10px 0;
+}
+
+.qr-section h2 {
+    color: #7bb5a8;
+    margin-bottom: 15px;
 }
 
 .qr-section::before {
@@ -707,8 +724,10 @@ body {
     }
 
     .qr-section p {
-        font-size: 0.9rem;
+        font-size: 0.95rem;
         text-align: center;
+        color: #555;
+        font-weight: 400;
     }
 
     .rsvp-section h2 {
