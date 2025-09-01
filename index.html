@@ -7,8 +7,10 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <!-- Controles de música mejorados -->
   <div class="music-controls" onclick="toggleMusic()">
-      </div>
+    <span id="musicIcon">🎵</span>
+  </div>
 
   <div class="invitation-container">
       <header class="header">
@@ -43,6 +45,8 @@
           <section class="section">
               <h2 class="section-title">Ubicación</h2>
               <div class="location-info">
+                <p>Celebraremos la ceremonia religiosa y la fiesta en el mismo lugar, aquí tienes el mapa y la dirección abajo. Si te pierdes podrás consultarlo siempre aquí.</p>
+                <br>
                   <div class="location-title">🏰 Lienzo Charro "La Tapatía"</div>
                   <div class="location-details">
                       📍 Av Centenario 1100, Colinas de Tarango, Álvaro Obregón, 01620 Ciudad de México, CDMX<br>
@@ -68,7 +72,7 @@
 
           <section class="section">
               <div class="rsvp-section">
-                  <h2 style="margin-bottom: 10px; font-family: 'Playfair Display', serif;">Confirma tu Asistencia</h2>
+                  <h2 style="margin-bottom: 10px;">Confirma tu Asistencia</h2>
                   <p style="opacity: 0.9; margin-bottom: 20px;">Por favor confirma antes del 1 de Agosto 2026</p>
 
                   <div class="guest-search">
@@ -106,15 +110,286 @@
 
       <footer class="footer">
           <p>"El amor no se trata de encontrar a la persona perfecta, sino de ver perfectamente a una persona imperfecta"</p>
-          <p style="margin-top: 10px; font-size: 0.9em;">Con amor, Ceci & Ángel ❤️</p>
+          <p style="margin-top: 10px; font-size: 0.9em;">Con amor, Ceci & Ángel 💙💚✨</p>
       </footer>
   </div>
 
-  <audio id="backgroundMusic" loop>
+  <!-- OPCIÓN 1: Audio file directo (recomendado) -->
+  <audio id="backgroundMusic" loop preload="auto">
+      <!-- Reemplaza con tu archivo de audio local -->
+      <source src="audio/wedding-song.mp3" type="audio/mpeg">
+      <!-- <source src="audio/wedding-song.ogg" type="audio/ogg"> -->
+      <!-- Fallback a un audio libre de derechos -->
       <source src="https://www.soundjay.com/misc/sounds/romantic-music.mp3" type="audio/mpeg">
   </audio>
 
+  <!-- OPCIÓN 2: YouTube Embed (alternativo) -->
+  <div id="youtubePlayer" style="display: none;">
+    <iframe id="youtube-iframe" width="0" height="0" 
+            src="https://youtu.be/dapR9it0uIQ?si=mVoYNTvpjxnKK_1I" 
+            title="Wedding Music" 
+            frameborder="0" 
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
+    </iframe>
+  </div>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script src="js/script.js"></script>
+  <script>
+    // Variables globales
+    let musicPlaying = false;
+    let selectedRSVP = null;
+    let audioContext;
+    let currentAudioSource = 'file'; // 'file' o 'youtube'
+
+    // Configuración de la fecha de la boda
+    const weddingDate = new Date('2026-10-30T18:00:00');
+    
+    // URL de tu Google Apps Script
+    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwKCBT5W1emYWwMHvo_hp_sVpqDhtRIm2aw8-lXMeBO3_cMMQFWT4c75ji8SQPWJl35/exec';
+
+    // Inicialización mejorada
+    document.addEventListener('DOMContentLoaded', function () {
+        generateQR();
+        startCountdown();
+        initializeMusic();
+        
+        // Auto-reproducir música después de interacción del usuario
+        document.addEventListener('click', startMusicOnFirstInteraction, { once: true });
+    });
+
+    // Función para inicializar la música
+    function initializeMusic() {
+        const audio = document.getElementById('backgroundMusic');
+        
+        // Configurar volumen inicial
+        audio.volume = 0.3;
+        
+        // Intentar cargar el audio
+        audio.addEventListener('canplaythrough', function() {
+            console.log('Audio cargado y listo para reproducir');
+        });
+        
+        audio.addEventListener('error', function(e) {
+            console.log('Error cargando audio, cambiando a alternativo');
+            currentAudioSource = 'youtube';
+        });
+    }
+
+    // Función para iniciar música en la primera interacción
+    function startMusicOnFirstInteraction() {
+        // Auto-reproducir música de fondo suavemente
+        setTimeout(() => {
+            toggleMusic();
+        }, 1000);
+    }
+
+    // Función mejorada para alternar música
+    function toggleMusic() {
+        const audio = document.getElementById('backgroundMusic');
+        const musicControls = document.querySelector('.music-controls');
+        const musicIcon = document.getElementById('musicIcon');
+        const youtubePlayer = document.getElementById('youtubePlayer');
+
+        if (musicPlaying) {
+            // Pausar música
+            if (currentAudioSource === 'file') {
+                audio.pause();
+            } else {
+                youtubePlayer.style.display = 'none';
+            }
+            
+            musicPlaying = false;
+            musicControls.classList.remove('playing');
+            musicIcon.textContent = '🎵';
+        } else {
+            // Reproducir música
+            if (currentAudioSource === 'file') {
+                audio.play().catch(e => {
+                    console.log('No se pudo reproducir el audio, intentando YouTube');
+                    currentAudioSource = 'youtube';
+                    playYouTubeMusic();
+                });
+            } else {
+                playYouTubeMusic();
+            }
+            
+            musicPlaying = true;
+            musicControls.classList.add('playing');
+            musicIcon.textContent = '🎼';
+        }
+    }
+
+    // Función para reproducir YouTube
+    function playYouTubeMusic() {
+        const youtubePlayer = document.getElementById('youtubePlayer');
+        youtubePlayer.style.display = 'block';
+        
+        // Reiniciar el iframe para comenzar la reproducción
+        const iframe = document.getElementById('youtube-iframe');
+        iframe.src = iframe.src;
+    }
+
+    // Función para generar código QR
+    function generateQR() {
+        const qrcode = new QRCode(document.getElementById("qrcode"), {
+            text: "https://drive.google.com/drive/folders/1LSnA-UfwqhEobzkuATcTOKlB_2an2cFD?usp=drive_link",
+            width: 128,
+            height: 128,
+            colorDark: "#2C6F80",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+    }
+
+    // Función para la cuenta regresiva
+    function startCountdown() {
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const distance = weddingDate.getTime() - now;
+
+            if (distance > 0) {
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                document.getElementById('days').textContent = days;
+                document.getElementById('hours').textContent = hours;
+                document.getElementById('minutes').textContent = minutes;
+                document.getElementById('seconds').textContent = seconds;
+            } else {
+                document.getElementById('countdown').innerHTML = '<div style="font-size: 2rem; color: #2C6F80; font-weight: 600;">¡Es hoy! 🎉</div>';
+            }
+        }
+
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+    }
+
+    // Función para abrir Google Maps
+    function openMap() {
+        const address = "Av Centenario 1100, Colinas de Tarango, Álvaro Obregón, 01620 Ciudad de México, CDMX";
+        const encodedAddress = encodeURIComponent(address);
+        window.open(`https://maps.google.com/?q=${encodedAddress}`, '_blank');
+    }
+
+    // Resto de funciones para RSVP (mantener las existentes)
+    async function searchGuest() {
+        const searchName = document.getElementById('searchName').value.trim();
+        const searchResult = document.getElementById('searchResult');
+        const rsvpButtons = document.getElementById('rsvpButtons');
+        const guestInfoForm = document.getElementById('guestInfo');
+        const responseMessageDiv = document.getElementById('responseMessage');
+        
+        responseMessageDiv.style.display = 'none';
+        searchResult.innerHTML = '<div class="loading-container"><div class="loading"></div> Buscando...</div>';
+        
+        rsvpButtons.style.display = 'none';
+        guestInfoForm.style.display = 'none';
+        
+        if (!searchName) {
+            showMessage('Por favor ingresa tu nombre para buscar', 'error');
+            searchResult.innerHTML = '';
+            return;
+        }
+        
+        try {
+            const url = `${GOOGLE_SCRIPT_URL}?searchName=${encodeURIComponent(searchName)}`;
+            const response = await fetch(url);
+            const result = await response.json();
+            
+            if (result.success && result.found) {
+                document.getElementById('guestName').value = result.name;
+                searchResult.innerHTML = `<p style="color: #2C6F80; margin: 15px 0;">¡Hola ${result.name}!</p>`;
+                rsvpButtons.style.display = 'flex';
+                showMessage('¡Te encontramos!', 'success');
+            } else {
+                searchResult.innerHTML = `<p style="color: #B85A30; margin: 15px 0;">Lo sentimos, no te encontramos en la lista.</p>`;
+                showMessage('Invitado no encontrado.', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showMessage('Error de conexión al buscar.', 'error');
+        }
+    }
+
+    function selectRSVP(type) {
+        selectedRSVP = type;
+        document.getElementById('attendingBtn').classList.remove('selected');
+        document.getElementById('notAttendingBtn').classList.remove('selected');
+        
+        if (type === 'attending') {
+            document.getElementById('attendingBtn').classList.add('selected');
+        } else {
+            document.getElementById('notAttendingBtn').classList.add('selected');
+        }
+        
+        document.getElementById('guestInfo').style.display = 'block';
+    }
+
+    async function submitRSVP() {
+        if (!selectedRSVP) {
+            showMessage('Por favor, selecciona si asistirás o no.', 'error');
+            return;
+        }
+
+        const nombre = document.getElementById('guestName').value.trim();
+        const asistira = selectedRSVP === 'attending';
+        const acompanantes = asistira ? parseInt(document.getElementById('guestCount').value) || 0 : 0;
+        const mensaje = document.getElementById('guestMessage').value.trim();
+        
+        const submitButton = document.querySelector('.submit-button');
+        submitButton.disabled = true;
+        showMessage('Enviando confirmación...', 'info');
+        
+        try {
+            const params = new URLSearchParams({
+                nombre: nombre,
+                asistira: asistira,
+                acompanantes: acompanantes,
+                mensaje: mensaje,
+                action: 'submit'
+            });
+
+            const url = `${GOOGLE_SCRIPT_URL}?${params.toString()}`;
+            const response = await fetch(url);
+            const result = await response.json();
+
+            if (result.success) {
+                showMessage(result.message, 'success');
+                setTimeout(resetForm, 3000);
+            } else {
+                showMessage(`Error: ${result.message}`, 'error');
+            }
+        } catch (error) {
+            showMessage('Error al enviar la confirmación.', 'error');
+        } finally {
+            submitButton.disabled = false;
+        }
+    }
+
+    function resetForm() {
+        document.getElementById('searchName').value = '';
+        document.getElementById('guestName').value = '';
+        document.getElementById('guestCount').value = '';
+        document.getElementById('guestMessage').value = '';
+        document.getElementById('guestInfo').style.display = 'none';
+        document.getElementById('searchResult').innerHTML = '';
+        document.getElementById('rsvpButtons').style.display = 'none';
+        selectedRSVP = null;
+    }
+
+    function showMessage(text, type) {
+        const responseDiv = document.getElementById('responseMessage');
+        responseDiv.innerHTML = `<div class="message ${type}">${text}</div>`;
+        responseDiv.style.display = 'block';
+        
+        if (type === 'success') {
+            setTimeout(() => {
+                responseDiv.style.display = 'none';
+            }, 8000);
+        }
+    }
+  </script>
 </body>
 </html>

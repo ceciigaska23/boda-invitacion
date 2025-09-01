@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600;700&family=Crimson+Text:wght@400;600;700&family=Lato:wght@300;400;500;600&family=Great+Vibes:wght@400&family=Cormorant+Garamond:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Nunito:wght@300;400;500;600;700&family=Great+Vibes:wght@400&family=Quicksand:wght@300;400;500;600;700&family=Cormorant+Garamond:wght@300;400;500;600;700&family=Lato:wght@300;400;500;600&display=swap');
 
 * {
     margin: 0;
@@ -7,7 +7,7 @@
 }
 
 body {
-    font-family: 'Lato', sans-serif;
+    font-family: 'Nunito', sans-serif;
     line-height: 1.6;
     color: #2c2c2c;
     overflow-x: hidden;
@@ -73,7 +73,6 @@ body {
     color: white;
     position: relative;
     overflow: hidden;
-    /* Removemos la imagen de fondo para un diseño más limpio */
 }
 
 .header::before {
@@ -113,14 +112,14 @@ body {
 }
 
 .wedding-date {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.6rem;
-    font-weight: 400;
+    font-family: 'Quicksand', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 500;
     opacity: 0.95;
     position: relative;
     z-index: 2;
-    letter-spacing: 3px;
-    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-transform: none;
 }
 
 .content {
@@ -133,13 +132,13 @@ body {
 }
 
 .section-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 2.2rem;
+    font-family: 'Poppins', sans-serif;
+    font-size: 2rem;
     color: #7bb5a8;
     margin-bottom: 25px;
     position: relative;
-    font-weight: 500;
-    letter-spacing: 1px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
 }
 
 .section-title::after {
@@ -223,18 +222,19 @@ body {
 }
 
 .location-title {
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     color: #7bb5a8;
     margin-bottom: 15px;
-    font-weight: 500;
-    font-family: 'Cormorant Garamond', serif;
-    letter-spacing: 0.5px;
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+    letter-spacing: 0.3px;
 }
 
 .location-details {
     color: #555;
     line-height: 1.8;
     font-weight: 400;
+    font-family: 'Nunito', sans-serif;
 }
 
 .map-button {
@@ -246,6 +246,7 @@ body {
     cursor: pointer;
     margin-top: 15px;
     font-weight: 500;
+    font-family: 'Quicksand', sans-serif;
     transition: transform 0.3s ease;
 }
 
@@ -275,11 +276,14 @@ body {
     line-height: 1.6;
     text-align: center;
     margin: 10px 0;
+    font-family: 'Nunito', sans-serif;
 }
 
 .qr-section h2 {
     color: #7bb5a8;
     margin-bottom: 15px;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
 }
 
 .qr-section::before {
@@ -317,6 +321,18 @@ body {
     overflow: hidden;
 }
 
+.rsvp-section h2 {
+    font-family: 'Poppins', sans-serif !important;
+    font-weight: 600 !important;
+    margin-bottom: 15px;
+}
+
+.rsvp-section p {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 400;
+    margin-bottom: 20px;
+}
+
 .rsvp-section::before {
     content: '';
     position: absolute;
@@ -345,6 +361,7 @@ body {
     color: white;
     cursor: pointer;
     font-weight: 500;
+    font-family: 'Quicksand', sans-serif;
     transition: all 0.3s ease;
     min-width: 120px;
 }
@@ -376,10 +393,12 @@ body {
     color: white;
     margin: 10px 0;
     text-align: center;
+    font-family: 'Nunito', sans-serif;
 }
 
 .guest-input::placeholder {
     color: rgba(255, 255, 255, 0.7);
+    font-family: 'Nunito', sans-serif;
 }
 
 .guest-input:focus {
@@ -397,6 +416,7 @@ body {
     border-radius: 25px;
     cursor: pointer;
     font-weight: 600;
+    font-family: 'Quicksand', sans-serif;
     margin-top: 15px;
     transition: all 0.3s ease;
 }
@@ -422,6 +442,7 @@ body {
     padding: 15px;
     border-radius: 10px;
     display: none;
+    font-family: 'Nunito', sans-serif;
 }
 
 .message {
@@ -432,6 +453,7 @@ body {
     text-align: center;
     animation: slideIn 0.3s ease-out;
     line-height: 1.5;
+    font-family: 'Nunito', sans-serif;
 }
 
 .message.success {
@@ -459,7 +481,9 @@ body {
     padding: 40px;
     background: linear-gradient(145deg, #fff2e6 0%, #fef7f0 100%);
     color: #666;
-    font-style: italic;
+    font-style: normal;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 400;
     position: relative;
 }
 
@@ -558,7 +582,7 @@ body {
     }
 
     .wedding-date {
-        font-size: 1.3rem;
+        font-size: 1.2rem;
     }
 
     .section-title {
@@ -913,7 +937,7 @@ body {
 
     .footer {
         background: rgba(255, 242, 230, 0.9);
-        color: #b0b0b0;
+        color: #383838;
     }
 
     .section-title {
