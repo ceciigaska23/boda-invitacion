@@ -7,7 +7,6 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <!-- Controles de música mejorados -->
   <div class="music-controls" onclick="toggleMusic()">
     <span id="musicIcon">🎵</span>
   </div>
@@ -114,29 +113,15 @@
       </footer>
   </div>
 
-  <!-- OPCIÓN 1: Audio file directo (recomendado) -->
   <audio id="backgroundMusic" loop preload="auto">
-      <!-- Reemplaza con tu archivo de audio local -->
       <source src="audio/wedding-song.mp3" type="audio/mpeg">
-      <!-- <source src="audio/wedding-song.ogg" type="audio/ogg"> -->
-      <!-- Fallback a un audio libre de derechos -->
       <source src="https://www.soundjay.com/misc/sounds/romantic-music.mp3" type="audio/mpeg">
   </audio>
-
-  <!-- OPCIÓN 2: YouTube Embed (alternativo) -->
-  <!-- <div id="youtubePlayer" style="display: none;">
-    <iframe id="youtube-iframe" width="0" height="0" 
-            src="https://youtu.be/dapR9it0uIQ?si=mVoYNTvpjxnKK_1I" 
-            title="Wedding Music" 
-            frameborder="0" 
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
-    </iframe>
-  </div> -->
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script>
     // Variables globales
-    let musicPlaying = true;
+    let musicPlaying = false; // Se inicia en false para que el primer toque la active
     let selectedRSVP = null;
     let audioContext;
     let currentAudioSource = 'file'; // 'file' o 'youtube'
@@ -153,18 +138,15 @@
         startCountdown();
         initializeMusic();
         
-        // Auto-reproducir música después de interacción del usuario
-        document.addEventListener('click', startMusicOnFirstInteraction, { once: true });
+        // El nuevo manejador de eventos para el primer toque en cualquier parte del documento
+        document.addEventListener('click', startMusic, { once: true });
     });
 
     // Función para inicializar la música
     function initializeMusic() {
         const audio = document.getElementById('backgroundMusic');
-        
-        // Configurar volumen inicial
         audio.volume = 0.3;
         
-        // Intentar cargar el audio
         audio.addEventListener('canplaythrough', function() {
             console.log('Audio cargado y listo para reproducir');
         });
@@ -175,15 +157,22 @@
         });
     }
 
-    // Función para iniciar música en la primera interacción
-    function startMusicOnFirstInteraction() {
-        // Auto-reproducir música de fondo suavemente
-        setTimeout(() => {
-            toggleMusic();
-        }, 1000);
+    // Nueva función que inicia la música y cambia el estado
+    function startMusic() {
+        if (!musicPlaying) {
+            const audio = document.getElementById('backgroundMusic');
+            audio.play().catch(e => {
+                console.log('No se pudo reproducir el audio, intentando YouTube');
+                currentAudioSource = 'youtube';
+                playYouTubeMusic();
+            });
+            musicPlaying = true;
+            document.querySelector('.music-controls').classList.add('playing');
+            document.getElementById('musicIcon').textContent = '🎼';
+        }
     }
 
-    // Función mejorada para alternar música
+    // Función modificada para alternar música
     function toggleMusic() {
         const audio = document.getElementById('backgroundMusic');
         const musicControls = document.querySelector('.music-controls');
@@ -195,6 +184,7 @@
             if (currentAudioSource === 'file') {
                 audio.pause();
             } else {
+                // Para YouTube, la mejor opción es ocultar y recargar al volver a iniciar
                 youtubePlayer.style.display = 'none';
             }
             
@@ -202,20 +192,9 @@
             musicControls.classList.remove('playing');
             musicIcon.textContent = '🎵';
         } else {
-            // Reproducir música
-            if (currentAudioSource === 'file') {
-                audio.play().catch(e => {
-                    console.log('No se pudo reproducir el audio, intentando YouTube');
-                    currentAudioSource = 'youtube';
-                    playYouTubeMusic();
-                });
-            } else {
-                playYouTubeMusic();
-            }
-            
-            musicPlaying = true;
-            musicControls.classList.add('playing');
-            musicIcon.textContent = '🎼';
+            // Reproducir música (esto ya no es necesario aquí si solo se usa para pausar)
+            // Si el usuario hace click en el botón, solo se activa si ya estaba pausada
+            startMusic();
         }
     }
 
@@ -224,7 +203,6 @@
         const youtubePlayer = document.getElementById('youtubePlayer');
         youtubePlayer.style.display = 'block';
         
-        // Reiniciar el iframe para comenzar la reproducción
         const iframe = document.getElementById('youtube-iframe');
         iframe.src = iframe.src;
     }
