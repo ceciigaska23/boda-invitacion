@@ -1,5 +1,5 @@
 // ⚠️ IMPORTANTE: Reemplaza esta URL con la de tu Google Apps Script
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxtSHACRLbYw0GWIdaCYmOXQiEyD-KwX3O2MLmkLPEWh74LRz2499InVfYSqM-H_MvE/exec';
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwKCBT5W1emYWwMHvo_hp_sVpqDhtRIm2aw8-lXMeBO3_cMMQFWT4c75ji8SQPWJl35/exec';
 
 // Variables globales
 let musicPlaying = false;
