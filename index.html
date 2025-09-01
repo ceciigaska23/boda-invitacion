@@ -124,19 +124,19 @@
   </audio>
 
   <!-- OPCIÓN 2: YouTube Embed (alternativo) -->
-  <div id="youtubePlayer" style="display: none;">
+  <!-- <div id="youtubePlayer" style="display: none;">
     <iframe id="youtube-iframe" width="0" height="0" 
             src="https://youtu.be/dapR9it0uIQ?si=mVoYNTvpjxnKK_1I" 
             title="Wedding Music" 
             frameborder="0" 
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
     </iframe>
-  </div>
+  </div> -->
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script>
     // Variables globales
-    let musicPlaying = false;
+    let musicPlaying = true;
     let selectedRSVP = null;
     let audioContext;
     let currentAudioSource = 'file'; // 'file' o 'youtube'
