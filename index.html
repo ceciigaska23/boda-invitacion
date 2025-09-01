@@ -8,8 +8,7 @@
 </head>
 <body>
   <div class="music-controls" onclick="toggleMusic()">
-      <!--span id="musicIcon">🎵</span-->
-  </div>
+      </div>
 
   <div class="invitation-container">
       <header class="header">
@@ -72,7 +71,13 @@
                   <h2 style="margin-bottom: 10px; font-family: 'Playfair Display', serif;">Confirma tu Asistencia</h2>
                   <p style="opacity: 0.9; margin-bottom: 20px;">Por favor confirma antes del 1 de Septiembre</p>
 
-                  <div class="rsvp-buttons">
+                  <div class="guest-search">
+                      <input type="text" class="guest-input" id="searchName" placeholder="Escribe tu nombre">
+                      <button class="submit-button" onclick="searchGuest()">Buscar</button>
+                  </div>
+                  <div id="searchResult" class="search-result"></div>
+
+                  <div class="rsvp-buttons" id="rsvpButtons" style="display:none;">
                       <button class="rsvp-button" onclick="selectRSVP('attending')" id="attendingBtn">
                           ✓ Asistiré
                       </button>
@@ -82,8 +87,11 @@
                   </div>
 
                   <div class="guest-info" id="guestInfo" style="display: none;">
-                      <input type="text" class="guest-input" id="guestName" placeholder="Tu nombre completo">
+                      <input type="text" class="guest-input" id="guestName" placeholder="Tu nombre completo" readonly>
                       <input type="number" class="guest-input" id="guestCount" placeholder="Número de acompañantes" min="0" max="5">
+                      
+                      <div id="companionInputs"></div>
+                      
                       <textarea class="guest-input" id="guestMessage" placeholder="Mensaje especial (opcional)" style="height: 80px; resize: vertical; border-radius: 15px; padding: 15px;"></textarea>
                       <br>
                       <button class="submit-button" onclick="submitRSVP()">
