@@ -944,3 +944,15 @@ body {
         color: #66d9ce;
     }
 }
+
+/* Animación de entrada para la invitación */
+.invitation-container {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 1s ease-out, transform 1s ease-out;
+}
+
+.invitation-container.visible {
+    opacity: 1;
+    transform: translateY(0);
+}

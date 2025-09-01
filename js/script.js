@@ -2,8 +2,10 @@
 const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwKCBT5W1emYWwMHvo_hp_sVpqDhtRIm2aw8-lXMeBO3_cMMQFWT4c75ji8SQPWJl35/exec';
 
 // Variables globales
-let musicPlaying = false;
+let musicPlaying = false; // Se inicia en false para que el primer toque la active
 let selectedRSVP = null;
+let audioContext;
+let currentAudioSource = 'file'; // 'file' o 'youtube'
 
 // Configuración de la fecha de la boda
 const weddingDate = new Date('2026-10-30T18:00:00');
@@ -11,7 +13,7 @@ const weddingDate = new Date('2026-10-30T18:00:00');
 // Función de debug
 function debugLog(message, data = null) {
     console.log(`[DEBUG] ${message}`, data || '');
-    
+
     // Mostrar en pantalla también para debugging
     const debugDiv = document.getElementById('debugInfo');
     if (debugDiv) {
@@ -20,123 +22,104 @@ function debugLog(message, data = null) {
     }
 }
 
-// Inicialización
+// Inicialización mejorada
 document.addEventListener('DOMContentLoaded', function () {
     debugLog('Página cargada, iniciando...');
     generateQR();
     startCountdown();
-    
+    initializeMusic();
+
     // Crear div de debug si no existe
     createDebugPanel();
-    
+
     debugLog('Script URL configurada:', GOOGLE_SCRIPT_URL);
+
+    // **NUEVA LÍNEA PARA LA ANIMACIÓN DE ENTRADA**
+    document.querySelector('.invitation-container').classList.add('visible');
+
+    // **NUEVA LÍNEA PARA INICIAR LA MÚSICA AUTOMÁTICAMENTE**
+    startMusic();
 });
 
 // Crear panel de debug
 function createDebugPanel() {
     const debugPanel = document.createElement('div');
     debugPanel.id = 'debugPanel';
-    debugPanel.innerHTML = `
-        <div style="position: fixed; bottom: 10px; left: 10px; background: rgba(0,0,0,0.8); color: white; padding: 10px; border-radius: 5px; max-width: 300px; max-height: 200px; overflow-y: auto; font-size: 0.8em; z-index: 9999; display: none;">
-            <div style="font-weight: bold; margin-bottom: 5px;">Debug Info <button onclick="toggleDebug()" style="float: right; background: none; border: none; color: white;">✖</button></div>
-            <div id="debugInfo"></div>
-            <button onclick="testConnection()" style="margin-top: 5px; padding: 5px; background: #4CAF50; color: white; border: none; border-radius: 3px; cursor: pointer;">Test Connection</button>
-        </div>
-        <button onclick="toggleDebug()" style="position: fixed; bottom: 10px; left: 10px; background: #ff9800; color: white; border: none; padding: 10px; border-radius: 50px; cursor: pointer; z-index: 10000;">🐛</button>
-    `;
+    debugPanel.style = 'position: fixed; bottom: 0; left: 0; width: 300px; height: 150px; background: rgba(0,0,0,0.7); color: white; padding: 10px; font-family: monospace; font-size: 10px; overflow-y: scroll; z-index: 9999; display: none;';
+    debugPanel.innerHTML = '<h4>Debug Log</h4><div id="debugInfo"></div>';
     document.body.appendChild(debugPanel);
+
+    // Toggle debug panel
+    // document.addEventListener('keydown', (e) => {
+    //     if (e.key === 'd' && e.ctrlKey) {
+    //         debugPanel.style.display = debugPanel.style.display === 'none' ? 'block' : 'none';
+    //     }
+    // });
 }
 
-function toggleDebug() {
-    const panel = document.querySelector('#debugPanel > div');
-    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+// Función para inicializar la música
+function initializeMusic() {
+    const audio = document.getElementById('backgroundMusic');
+    audio.volume = 0.3;
+
+    audio.addEventListener('canplaythrough', function() {
+        console.log('Audio cargado y listo para reproducir');
+    });
+
+    audio.addEventListener('error', function(e) {
+        console.log('Error cargando audio, cambiando a alternativo');
+        currentAudioSource = 'youtube';
+    });
 }
 
-// Función para probar la conexión
-async function testConnection() {
-    debugLog('Probando conexión con Google Apps Script...');
-    
-    if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes('TU_SCRIPT_ID_AQUI')) {
-        debugLog('❌ ERROR: URL no configurada');
-        showMessage('Error: Google Apps Script no configurado. Revisa la consola.', 'error');
-        return;
+// Nueva función que inicia la música y cambia el estado
+function startMusic() {
+    if (!musicPlaying) {
+        const audio = document.getElementById('backgroundMusic');
+        audio.play().catch(e => {
+            console.log('No se pudo reproducir el audio, intentando YouTube');
+            currentAudioSource = 'youtube';
+            playYouTubeMusic();
+        });
+        musicPlaying = true;
+        document.querySelector('.music-controls').classList.add('playing');
+        document.getElementById('musicIcon').textContent = '🎼';
     }
-    
-    try {
-        debugLog('Enviando solicitud GET de prueba...');
-        const response = await fetch(GOOGLE_SCRIPT_URL + '?test=true');
-        
-        debugLog('Respuesta recibida:', response.status);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        
-        const result = await response.json();
-        debugLog('Contenido de respuesta:', result);
-        
-        showMessage('✅ Conexión exitosa con Google Apps Script', 'success');
-    } catch (error) {
-        debugLog('❌ Error en conexión:', error.message);
-        showMessage(`❌ Error de conexión: ${error.message}`, 'error');
-    }
 }
 
-// Función para alternar la música
+// Función modificada para alternar música
 function toggleMusic() {
     const audio = document.getElementById('backgroundMusic');
     const musicControls = document.querySelector('.music-controls');
     const musicIcon = document.getElementById('musicIcon');
+    const youtubePlayer = document.getElementById('youtubePlayer');
 
     if (musicPlaying) {
-        audio.pause();
+        // Pausar música
+        if (currentAudioSource === 'file') {
+            audio.pause();
+        } else {
+            // Para YouTube, la mejor opción es ocultar y recargar al volver a iniciar
+            youtubePlayer.style.display = 'none';
+        }
+
         musicPlaying = false;
         musicControls.classList.remove('playing');
-        if (musicIcon) musicIcon.textContent = '🎵';
+        musicIcon.textContent = '🎵';
     } else {
-        audio.play().catch(e => {
-            console.log('No se pudo reproducir la música automáticamente');
-            playSimpleMusic();
-        });
-        musicPlaying = true;
-        musicControls.classList.add('playing');
-        if (musicIcon) musicIcon.textContent = '🎼';
+        // Reproducir música (esto ya no es necesario aquí si solo se usa para pausar)
+        // Si el usuario hace click en el botón, solo se activa si ya estaba pausada
+        startMusic();
     }
 }
 
-// Función para reproducir música simple
-function playSimpleMusic() {
-    try {
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const notes = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25];
-        let noteIndex = 0;
+// Función para reproducir YouTube
+function playYouTubeMusic() {
+    const youtubePlayer = document.getElementById('youtubePlayer');
+    youtubePlayer.style.display = 'block';
 
-        function playNote() {
-            if (musicPlaying) {
-                const oscillator = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
-
-                oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-
-                oscillator.frequency.setValueAtTime(notes[noteIndex % notes.length], audioContext.currentTime);
-                oscillator.type = 'sine';
-
-                gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
-
-                oscillator.start(audioContext.currentTime);
-                oscillator.stop(audioContext.currentTime + 1);
-
-                noteIndex++;
-                setTimeout(playNote, 1200);
-            }
-        }
-
-        playNote();
-    } catch (error) {
-        console.log('No se pudo crear el contexto de audio');
-    }
+    const iframe = document.getElementById('youtube-iframe');
+    iframe.src = iframe.src;
 }
 
 // Función para generar código QR
@@ -180,37 +163,25 @@ function startCountdown() {
 function openMap() {
     const address = "Av Centenario 1100, Colinas de Tarango, Álvaro Obregón, 01620 Ciudad de México, CDMX";
     const encodedAddress = encodeURIComponent(address);
-    window.open(`https://maps.google.com/?q=${encodedAddress}`, '_blank');
+    window.open(`https://maps.google.com/?q=$${encodedAddress}`, '_blank');
 }
 
-// Función para buscar invitado
+// Resto de funciones para RSVP
 async function searchGuest() {
     const searchName = document.getElementById('searchName').value.trim();
     const searchResult = document.getElementById('searchResult');
     const rsvpButtons = document.getElementById('rsvpButtons');
     const guestInfoForm = document.getElementById('guestInfo');
     const responseMessageDiv = document.getElementById('responseMessage');
-    
-    // Ocultar mensajes anteriores y mostrar estado de carga
+
     responseMessageDiv.style.display = 'none';
     searchResult.innerHTML = '<div class="loading-container"><div class="loading"></div> Buscando...</div>';
-    
-    // Ocultar botones y formulario por si ya se habían mostrado
+
     rsvpButtons.style.display = 'none';
     guestInfoForm.style.display = 'none';
-    
-    const guestCountInput = document.getElementById('guestCount');
-    guestCountInput.style.display = 'block';
-    guestCountInput.readOnly = false;
-    
+
     if (!searchName) {
         showMessage('Por favor ingresa tu nombre para buscar', 'error');
-        searchResult.innerHTML = '';
-        return;
-    }
-    
-    if (!GOOGLE_SCRIPT_URL) {
-        showMessage('Error: La URL del script no está configurada.', 'error');
         searchResult.innerHTML = '';
         return;
     }
@@ -219,65 +190,24 @@ async function searchGuest() {
         const url = `${GOOGLE_SCRIPT_URL}?searchName=${encodeURIComponent(searchName)}`;
         const response = await fetch(url);
         const result = await response.json();
-        
-        if (result.success) {
-            if (result.found) {
-                document.getElementById('guestName').value = result.name;
-                guestCountInput.value = result.companions;
-                
-                if (result.confirmacion) {
-                    // ⚠️ Invitado ya ha confirmado, mostrar opciones de actualización
-                    searchResult.innerHTML = `<p style="color: #2C6F80; margin: 15px 0;">¡Hola **${result.name}**!</p><p>Ya confirmaste tu asistencia. ¿Deseas actualizar tu respuesta?</p>`;
-                    rsvpButtons.innerHTML = `
-                      <button class="rsvp-button selected" onclick="selectRSVP('attending')" id="attendingBtn">
-                          Actualizar RSVP
-                      </button>
-                      <button class="rsvp-button" onclick="selectRSVP('notAttending')" id="notAttendingBtn">
-                          Cancelar RSVP
-                      </button>
-                    `;
-                    rsvpButtons.style.display = 'flex';
-                } else {
-                    // ⚠️ Invitado no ha confirmado, mostrar opciones de confirmación normales
-                    let message = `<p style="color: #2C6F80; margin: 15px 0;">¡Hola **${result.name}**!</p>`;
-                    if (result.companions > 0) {
-                        message += `<p>Tienes **${result.companions}** acompañante(s) permitido(s). Por favor, confirma tu asistencia:</p>`;
-                        guestCountInput.readOnly = true;
-                    } else {
-                        message += `<p>Por favor confirma tu asistencia:</p>`;
-                        guestCountInput.style.display = 'none';
-                    }
-                    searchResult.innerHTML = message;
-                    rsvpButtons.innerHTML = `
-                      <button class="rsvp-button" onclick="selectRSVP('attending')" id="attendingBtn">
-                          ✓ Asistiré
-                      </button>
-                      <button class="rsvp-button" onclick="selectRSVP('notAttending')" id="notAttendingBtn">
-                          ✗ No podré asistir
-                      </button>
-                    `;
-                    rsvpButtons.style.display = 'flex';
-                }
-                showMessage(`¡Te encontramos!`, 'success');
-            } else {
-                searchResult.innerHTML = `<p style="color: #B85A30; margin: 15px 0;">Lo sentimos, ${result.message}</p>`;
-                showMessage('Invitado no encontrado.', 'error');
-            }
+
+        if (result.success && result.found) {
+            document.getElementById('guestName').value = result.name;
+            searchResult.innerHTML = `<p style="color: #2C6F80; margin: 15px 0;">¡Hola ${result.name}!</p>`;
+            rsvpButtons.style.display = 'flex';
+            showMessage('¡Te encontramos!', 'success');
         } else {
-            searchResult.innerHTML = `<p style="color: #B85A30; margin: 15px 0;">${result.message}</p>`;
-            showMessage(`Error en la búsqueda: ${result.message}`, 'error');
+            searchResult.innerHTML = `<p style="color: #B85A30; margin: 15px 0;">Lo sentimos, no te encontramos en la lista.</p>`;
+            showMessage('Invitado no encontrado.', 'error');
         }
     } catch (error) {
-        console.error('Error de red al buscar invitado:', error);
-        searchResult.innerHTML = `<p style="color: #B85A30; margin: 15px 0;">Error de conexión. Intenta de nuevo más tarde.</p>`;
+        console.error('Error:', error);
         showMessage('Error de conexión al buscar.', 'error');
     }
 }
 
 function selectRSVP(type) {
-    debugLog(`RSVP seleccionado: ${type}`);
     selectedRSVP = type;
-
     document.getElementById('attendingBtn').classList.remove('selected');
     document.getElementById('notAttendingBtn').classList.remove('selected');
 
@@ -288,31 +218,10 @@ function selectRSVP(type) {
     }
 
     document.getElementById('guestInfo').style.display = 'block';
-
-    const guestCountInput = document.getElementById('guestCount');
-    const companionsValue = parseInt(guestCountInput.value) || 0;
-    const companionInputsContainer = document.getElementById('companionInputs');
-    
-    if (type === 'attending') {
-        guestCountInput.style.display = 'block';
-        guestCountInput.readOnly = true;
-
-        if (companionsValue > 0) {
-            createCompanionInputs(companionsValue);
-            companionInputsContainer.style.display = 'block';
-        } else {
-            companionInputsContainer.style.display = 'none';
-        }
-    } else {
-        guestCountInput.style.display = 'none';
-        if (companionInputsContainer) {
-            companionInputsContainer.style.display = 'none';
-        }
-    }
 }
 
 async function submitRSVP() {
-    if (selectedRSVP === null) {
+    if (!selectedRSVP) {
         showMessage('Por favor, selecciona si asistirás o no.', 'error');
         return;
     }
@@ -321,76 +230,37 @@ async function submitRSVP() {
     const asistira = selectedRSVP === 'attending';
     const acompanantes = asistira ? parseInt(document.getElementById('guestCount').value) || 0 : 0;
     const mensaje = document.getElementById('guestMessage').value.trim();
-    
-    const companionNames = [];
-    if (asistira && acompanantes > 0) {
-        for (let i = 1; i <= acompanantes; i++) {
-            const companionName = document.getElementById(`companionName${i}`).value.trim();
-            companionNames.push(companionName);
-        }
-    }
-    
-    if (nombre === '') {
-        showMessage('El nombre no puede estar vacío.', 'error');
-        return;
-    }
 
     const submitButton = document.querySelector('.submit-button');
     submitButton.disabled = true;
     showMessage('Enviando confirmación...', 'info');
 
-    debugLog('Enviando solicitud GET...');
-    
-    const params = new URLSearchParams({
-        nombre: nombre,
-        asistira: asistira,
-        acompanantes: acompanantes,
-        mensaje: mensaje,
-        action: 'submit',
-        companionNames: JSON.stringify(companionNames) 
-    });
-
-    const url = `${GOOGLE_SCRIPT_URL}?${params.toString()}`;
-    debugLog('URL destino:', url);
-
     try {
+        const params = new URLSearchParams({
+            nombre: nombre,
+            asistira: asistira,
+            acompanantes: acompanantes,
+            mensaje: mensaje,
+            action: 'submit'
+        });
+
+        const url = `${GOOGLE_SCRIPT_URL}?${params.toString()}`;
         const response = await fetch(url);
         const result = await response.json();
 
-        debugLog('Respuesta del servidor:', result);
-
         if (result.success) {
             showMessage(result.message, 'success');
-            setTimeout(resetForm, 8000);
+            setTimeout(resetForm, 3000);
         } else {
-            showMessage(`Error al enviar: ${result.message}`, 'error');
+            showMessage(`Error: ${result.message}`, 'error');
         }
     } catch (error) {
-        console.error('Error de red/parsing:', error);
-        showMessage('Error al enviar la confirmación. Por favor, inténtalo de nuevo.', 'error');
+        showMessage('Error al enviar la confirmación.', 'error');
     } finally {
         submitButton.disabled = false;
     }
 }
 
-// ⚠️ Esta función debe estar definida para crear los campos de nombre
-function createCompanionInputs(count) {
-    const container = document.getElementById('companionInputs');
-    if (!container) return;
-    
-    container.innerHTML = '';
-    
-    for (let i = 1; i <= count; i++) {
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.className = 'guest-input companion-input';
-        input.placeholder = `Nombre de acompañante ${i}`;
-        input.id = `companionName${i}`;
-        container.appendChild(input);
-    }
-}
-
-// Función para resetear el formulario
 function resetForm() {
     document.getElementById('searchName').value = '';
     document.getElementById('guestName').value = '';
@@ -399,24 +269,14 @@ function resetForm() {
     document.getElementById('guestInfo').style.display = 'none';
     document.getElementById('searchResult').innerHTML = '';
     document.getElementById('rsvpButtons').style.display = 'none';
-    
-    // Resetear botones
-    document.getElementById('attendingBtn').classList.remove('selected');
-    document.getElementById('notAttendingBtn').classList.remove('selected');
     selectedRSVP = null;
-    
-    debugLog('Formulario reseteado');
 }
 
-// Función para mostrar mensajes
 function showMessage(text, type) {
     const responseDiv = document.getElementById('responseMessage');
     responseDiv.innerHTML = `<div class="message ${type}">${text}</div>`;
     responseDiv.style.display = 'block';
 
-    debugLog(`Mensaje mostrado (${type}): ${text}`);
-
-    // Auto-hide success messages after 8 seconds
     if (type === 'success') {
         setTimeout(() => {
             responseDiv.style.display = 'none';
