@@ -1,5 +1,6 @@
 // ⚠️ IMPORTANTE: Reemplaza esta URL con la de tu Google Apps Script
-const GOOGLE_SCRIPT_URL = 'https://cors-anywhere.herokuapp.com/https://script.google.com/macros/s/AKfycbzZ4DaRpZTTah0Ka8NTEKahDOJL0vrDoroHp00Y3i85iqc_8z1GRwbpep3dg3TEV0Q4/exec';
+const GOOGLE_SCRIPT_URL = 'https://api.allorigins.win/get?url=';
+// const GOOGLE_SCRIPT_URL = 'https://cors-anywhere.herokuapp.com/https://script.google.com/macros/s/AKfycbzZ4DaRpZTTah0Ka8NTEKahDOJL0vrDoroHp00Y3i85iqc_8z1GRwbpep3dg3TEV0Q4/exec';
 
 // Variables globales
 let musicPlaying = false; 
@@ -162,7 +163,7 @@ async function searchGuest() {
     try {
         const url = `${GOOGLE_SCRIPT_URL}?action=search&searchName=${encodeURIComponent(searchName)}`;
         console.log(url);
-        const response = await fetch(url);
+        const response = await fetch(`${GOOGLE_SCRIPT_URL}${encodeURIComponent('https://script.google.com/macros/s/AKfycbzZ4DaRpZTTah0Ka8NTEKahDOJL0vrDoroHp00Y3i85iqc_8z1GRwbpep3dg3TEV0Q4/exec')}`);
         console.log(response);
         
         if (!response.ok) {
