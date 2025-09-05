@@ -1,91 +1,63 @@
 // ⚠️ IMPORTANTE: Reemplaza esta URL con la de tu Google Apps Script
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwKCBT5W1emYWwMHvo_hp_sVpqDhtRIm2aw8-lXMeBO3_cMMQFWT4c75ji8SQPWJl35/exec';
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzZ4DaRpZTTah0Ka8NTEKahDOJL0vrDoroHp00Y3i85iqc_8z1GRwbpep3dg3TEV0Q4/exec';
 
 // Variables globales
-let musicPlaying = false; // Se inicia en false para que el primer toque la active
+let musicPlaying = false; 
 let selectedRSVP = null;
-let audioContext;
-let currentAudioSource = 'file'; // 'file' o 'youtube'
 
 // Configuración de la fecha de la boda
 const weddingDate = new Date('2026-10-30T18:00:00');
 
-// Función de debug
-function debugLog(message, data = null) {
-    console.log(`[DEBUG] ${message}`, data || '');
-
-    // Mostrar en pantalla también para debugging
-    const debugDiv = document.getElementById('debugInfo');
-    if (debugDiv) {
-        debugDiv.innerHTML += `<div style="font-size: 0.8em; color: #666; margin: 2px 0;">${message}</div>`;
-        debugDiv.scrollTop = debugDiv.scrollHeight;
-    }
-}
-
-// Inicialización mejorada
 document.addEventListener('DOMContentLoaded', function () {
-    debugLog('Página cargada, iniciando...');
+    // Iniciar funciones al cargar la página
     generateQR();
     startCountdown();
     initializeMusic();
 
-    // Crear div de debug si no existe
-    createDebugPanel();
-
-    debugLog('Script URL configurada:', GOOGLE_SCRIPT_URL);
-
-    // Ocultar la pantalla de bienvenida y comenzar la invitación
+    // Evento para ocultar la pantalla de bienvenida y comenzar la invitación
     const welcomeScreen = document.getElementById('welcomeScreen');
     welcomeScreen.addEventListener('click', function() {
-        welcomeScreen.classList.add('hidden'); // Ocultar la pantalla
-        document.querySelector('.invitation-container').classList.add('visible'); // Mostrar la invitación
-        startMusic(); // Iniciar la música después del primer clic
+        welcomeScreen.style.display = 'none';
+        document.querySelector('.invitation-container').classList.add('visible');
+        startMusic();
     }, { once: true });
+
+    // Escuchar cambios en el input de acompañantes
+    document.getElementById('guestCount').addEventListener('input', (e) => {
+        const count = parseInt(e.target.value) || 0;
+        createCompanionInputs(count);
+    });
+
+    // Aplicar efectos de entrada suaves
+    const sections = document.querySelectorAll('.section');
+    sections.forEach((section) => {
+        section.style.opacity = '0';
+        section.style.transform = 'translateY(30px)';
+        section.style.transition = 'all 0.8s ease-out';
+        observer.observe(section);
+    });
 });
-
-// Crear panel de debug
-function createDebugPanel() {
-    const debugPanel = document.createElement('div');
-    debugPanel.id = 'debugPanel';
-    debugPanel.style = 'position: fixed; bottom: 0; left: 0; width: 300px; height: 150px; background: rgba(0,0,0,0.7); color: white; padding: 10px; font-family: monospace; font-size: 10px; overflow-y: scroll; z-index: 9999; display: none;';
-    debugPanel.innerHTML = '<h4>Debug Log</h4><div id="debugInfo"></div>';
-    document.body.appendChild(debugPanel);
-
-    // Toggle debug panel
-    // document.addEventListener('keydown', (e) => {
-    //     if (e.key === 'd' && e.ctrlKey) {
-    //         debugPanel.style.display = debugPanel.style.display === 'none' ? 'block' : 'none';
-    //     }
-    // });
-}
 
 // Función para inicializar la música
 function initializeMusic() {
     const audio = document.getElementById('backgroundMusic');
-    audio.volume = 0.3;
-
-    audio.addEventListener('canplaythrough', function() {
-        console.log('Audio cargado y listo para reproducir');
-    });
-
-    audio.addEventListener('error', function(e) {
-        console.log('Error cargando audio, cambiando a alternativo');
-        currentAudioSource = 'youtube';
-    });
+    if (audio) {
+        audio.volume = 0.3;
+    }
 }
 
 // Nueva función que inicia la música y cambia el estado
 function startMusic() {
     if (!musicPlaying) {
         const audio = document.getElementById('backgroundMusic');
-        audio.play().catch(e => {
-            console.log('No se pudo reproducir el audio, intentando YouTube');
-            currentAudioSource = 'youtube';
-            playYouTubeMusic();
-        });
-        musicPlaying = true;
-        document.querySelector('.music-controls').classList.add('playing');
-        document.getElementById('musicIcon').textContent = '🎼';
+        if (audio) {
+            audio.play().catch(e => {
+                console.error('No se pudo reproducir el audio:', e);
+            });
+            musicPlaying = true;
+            document.querySelector('.music-controls').classList.add('playing');
+            document.getElementById('musicIcon').textContent = '🎼';
+        }
     }
 }
 
@@ -94,46 +66,37 @@ function toggleMusic() {
     const audio = document.getElementById('backgroundMusic');
     const musicControls = document.querySelector('.music-controls');
     const musicIcon = document.getElementById('musicIcon');
-    const youtubePlayer = document.getElementById('youtubePlayer');
+
+    if (!audio) return;
 
     if (musicPlaying) {
-        // Pausar música
-        if (currentAudioSource === 'file') {
-            audio.pause();
-        } else {
-            // Para YouTube, la mejor opción es ocultar y recargar al volver a iniciar
-            youtubePlayer.style.display = 'none';
-        }
-
+        audio.pause();
         musicPlaying = false;
         musicControls.classList.remove('playing');
         musicIcon.textContent = '🎵';
     } else {
-        // Reproducir música (esto ya no es necesario aquí si solo se usa para pausar)
-        // Si el usuario hace click en el botón, solo se activa si ya estaba pausada
-        startMusic();
+        audio.play().catch(e => {
+            console.error('No se pudo reproducir el audio:', e);
+        });
+        musicPlaying = true;
+        musicControls.classList.add('playing');
+        musicIcon.textContent = '🎼';
     }
-}
-
-// Función para reproducir YouTube
-function playYouTubeMusic() {
-    const youtubePlayer = document.getElementById('youtubePlayer');
-    youtubePlayer.style.display = 'block';
-
-    const iframe = document.getElementById('youtube-iframe');
-    iframe.src = iframe.src;
 }
 
 // Función para generar código QR
 function generateQR() {
-    const qrcode = new QRCode(document.getElementById("qrcode"), {
-        text: "https://drive.google.com/drive/folders/1LSnA-UfwqhEobzkuATcTOKlB_2an2cFD?usp=drive_link",
-        width: 128,
-        height: 128,
-        colorDark: "#2C6F80",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H
-    });
+    const qrElement = document.getElementById("qrcode");
+    if (qrElement && typeof QRCode !== 'undefined') {
+        const qrcode = new QRCode(qrElement, {
+            text: "https://drive.google.com/drive/folders/1LSnA-UfwqhEobzkuATcTOKlB_2an2cFD?usp=drive_link",
+            width: 128,
+            height: 128,
+            colorDark: "#2C6F80",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+    }
 }
 
 // Función para la cuenta regresiva
@@ -148,12 +111,20 @@ function startCountdown() {
             const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-            document.getElementById('days').textContent = days;
-            document.getElementById('hours').textContent = hours;
-            document.getElementById('minutes').textContent = minutes;
-            document.getElementById('seconds').textContent = seconds;
+            const daysEl = document.getElementById('days');
+            const hoursEl = document.getElementById('hours');
+            const minutesEl = document.getElementById('minutes');
+            const secondsEl = document.getElementById('seconds');
+
+            if (daysEl) daysEl.textContent = days;
+            if (hoursEl) hoursEl.textContent = hours;
+            if (minutesEl) minutesEl.textContent = minutes;
+            if (secondsEl) secondsEl.textContent = seconds;
         } else {
-            document.getElementById('countdown').innerHTML = '<div style="font-size: 2rem; color: #2C6F80; font-weight: 600;">¡Es hoy! 🎉</div>';
+            const countdownEl = document.getElementById('countdown');
+            if (countdownEl) {
+                countdownEl.innerHTML = '<div style="font-size: 2rem; color: #2C6F80; font-weight: 600;">¡Es hoy! 🎉</div>';
+            }
         }
     }
 
@@ -165,10 +136,10 @@ function startCountdown() {
 function openMap() {
     const address = "Av Centenario 1100, Colinas de Tarango, Álvaro Obregón, 01620 Ciudad de México, CDMX";
     const encodedAddress = encodeURIComponent(address);
-    window.open(`https://maps.google.com/?q=$${encodedAddress}`, '_blank');
+    window.open(`https://www.google.com/maps/search/?api=1&query=${encodedAddress}`, '_blank');
 }
 
-// Resto de funciones para RSVP
+// Función para buscar invitado
 async function searchGuest() {
     const searchName = document.getElementById('searchName').value.trim();
     const searchResult = document.getElementById('searchResult');
@@ -176,27 +147,43 @@ async function searchGuest() {
     const guestInfoForm = document.getElementById('guestInfo');
     const responseMessageDiv = document.getElementById('responseMessage');
 
+    // Limpiar estados anteriores
     responseMessageDiv.style.display = 'none';
     searchResult.innerHTML = '<div class="loading-container"><div class="loading"></div> Buscando...</div>';
-
     rsvpButtons.style.display = 'none';
     guestInfoForm.style.display = 'none';
 
     if (!searchName) {
-        showMessage('Por favor ingresa tu nombre para buscar', 'error');
+        showMessage('Por favor, ingresa tu nombre para buscar.', 'error');
         searchResult.innerHTML = '';
         return;
     }
 
     try {
-        const url = `${GOOGLE_SCRIPT_URL}?searchName=${encodeURIComponent(searchName)}`;
+        const url = `${GOOGLE_SCRIPT_URL}?action=search&searchName=${encodeURIComponent(searchName)}`;
+        console.log(url);
         const response = await fetch(url);
+        console.log(response);
+        
+        if (!response.ok) {
+            throw new Error(`Error HTTP: ${response.status}`);
+        }
+        
         const result = await response.json();
 
         if (result.success && result.found) {
             document.getElementById('guestName').value = result.name;
+            document.getElementById('guestCount').value = result.passes;
+            
             searchResult.innerHTML = `<p style="color: #2C6F80; margin: 15px 0;">¡Hola ${result.name}!</p>`;
+            
+            // Mostrar los campos de RSVP y el formulario de info del invitado
             rsvpButtons.style.display = 'flex';
+            guestInfoForm.style.display = 'block';
+
+            // Crear dinámicamente los campos de acompañantes
+            createCompanionInputs(result.passes);
+
             showMessage('¡Te encontramos!', 'success');
         } else {
             searchResult.innerHTML = `<p style="color: #B85A30; margin: 15px 0;">Lo sentimos, no te encontramos en la lista.</p>`;
@@ -204,24 +191,33 @@ async function searchGuest() {
         }
     } catch (error) {
         console.error('Error:', error);
-        showMessage('Error de conexión al buscar.', 'error');
+        showMessage('Error al conectar con el servidor. Inténtalo de nuevo.', 'error');
     }
 }
 
+
+// Función para seleccionar RSVP
 function selectRSVP(type) {
     selectedRSVP = type;
+    
+    // Limpiar selecciones previas
     document.getElementById('attendingBtn').classList.remove('selected');
     document.getElementById('notAttendingBtn').classList.remove('selected');
 
     if (type === 'attending') {
         document.getElementById('attendingBtn').classList.add('selected');
+        document.getElementById('guestCount').style.display = 'block';
     } else {
         document.getElementById('notAttendingBtn').classList.add('selected');
+        document.getElementById('guestCount').style.display = 'none';
+        document.getElementById('guestCount').value = '0';
+        createCompanionInputs(0); // Limpiar campos de acompañantes
     }
 
     document.getElementById('guestInfo').style.display = 'block';
 }
 
+// Función para enviar RSVP
 async function submitRSVP() {
     if (!selectedRSVP) {
         showMessage('Por favor, selecciona si asistirás o no.', 'error');
@@ -230,39 +226,71 @@ async function submitRSVP() {
 
     const nombre = document.getElementById('guestName').value.trim();
     const asistira = selectedRSVP === 'attending';
-    const acompanantes = asistira ? parseInt(document.getElementById('guestCount').value) || 0 : 0;
+    const guestCountInput = document.getElementById('guestCount');
+    const acompanantes = asistira 
+    ? Math.min(parseInt(guestCountInput.value) || 0, parseInt(guestCountInput.max) || 0) 
+    : 0;
     const mensaje = document.getElementById('guestMessage').value.trim();
+
+    if (!nombre) {
+        showMessage('El nombre es requerido.', 'error');
+        return;
+    }
+
+    // Recolectar nombres de acompañantes
+    const companionInputs = document.querySelectorAll('.companion-input');
+    const companionNames = Array.from(companionInputs)
+        .map(input => input.value.trim())
+        .filter(name => name);
+
+    // Validar que se han ingresado nombres para todos los acompañantes
+    if (asistira && acompanantes > 0 && companionNames.length !== acompanantes) {
+        showMessage(`Por favor ingresa los nombres de todos los acompañantes (${acompanantes}).`, 'error');
+        return;
+    }
 
     const submitButton = document.querySelector('.submit-button');
     submitButton.disabled = true;
     showMessage('Enviando confirmación...', 'info');
 
     try {
-        const params = new URLSearchParams({
-            nombre: nombre,
-            asistira: asistira,
-            acompanantes: acompanantes,
-            mensaje: mensaje,
-            action: 'submit'
+        const requestData = {
+            name: nombre,
+            status: asistira ? 'Asistiré' : 'No podré asistir',
+            guests: acompanantes,
+            companionNames: companionNames,
+            message: mensaje
+        };
+
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestData)
         });
 
-        const url = `${GOOGLE_SCRIPT_URL}?${params.toString()}`;
-        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`HTTP Error: ${response.status}`);
+        }
+
         const result = await response.json();
 
         if (result.success) {
-            showMessage(result.message, 'success');
+            showMessage(result.message || 'Confirmación enviada exitosamente', 'success');
             setTimeout(resetForm, 3000);
         } else {
             showMessage(`Error: ${result.message}`, 'error');
         }
     } catch (error) {
+        console.error('Error al enviar RSVP:', error);
         showMessage('Error al enviar la confirmación.', 'error');
     } finally {
         submitButton.disabled = false;
     }
 }
 
+// Función para resetear el formulario
 function resetForm() {
     document.getElementById('searchName').value = '';
     document.getElementById('guestName').value = '';
@@ -271,22 +299,29 @@ function resetForm() {
     document.getElementById('guestInfo').style.display = 'none';
     document.getElementById('searchResult').innerHTML = '';
     document.getElementById('rsvpButtons').style.display = 'none';
+    document.getElementById('companionInputs').innerHTML = '';
+    
+    // Limpiar selecciones
+    document.getElementById('attendingBtn').classList.remove('selected');
+    document.getElementById('notAttendingBtn').classList.remove('selected');
+    
     selectedRSVP = null;
 }
 
+// Función para mostrar mensajes
 function showMessage(text, type) {
     const responseDiv = document.getElementById('responseMessage');
     responseDiv.innerHTML = `<div class="message ${type}">${text}</div>`;
     responseDiv.style.display = 'block';
 
-    if (type === 'success') {
+    if (type === 'success' || type === 'error') {
         setTimeout(() => {
             responseDiv.style.display = 'none';
         }, 8000);
     }
 }
 
-// Agregar efectos de entrada suaves
+// Observer para efectos de entrada suaves
 const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
         if (entry.isIntersecting) {
@@ -296,23 +331,12 @@ const observer = new IntersectionObserver((entries) => {
     });
 });
 
-// Aplicar efectos a las secciones
-document.addEventListener('DOMContentLoaded', function () {
-    const sections = document.querySelectorAll('.section');
-    sections.forEach((section) => {
-        section.style.opacity = '0';
-        section.style.transform = 'translateY(30px)';
-        section.style.transition = 'all 0.8s ease-out';
-        observer.observe(section);
-    });
-});
-
 // Función para crear dinámicamente los campos de acompañantes
 function createCompanionInputs(count) {
     const container = document.getElementById('companionInputs');
-    if (!container) return; // Asegurar que el contenedor existe
+    if (!container) return;
 
-    container.innerHTML = ''; // Limpiar campos anteriores
+    container.innerHTML = '';
 
     for (let i = 1; i <= count; i++) {
         const input = document.createElement('input');
@@ -320,6 +344,7 @@ function createCompanionInputs(count) {
         input.className = 'guest-input companion-input';
         input.placeholder = `Nombre de acompañante ${i}`;
         input.id = `companionName${i}`;
+        input.required = true;
         container.appendChild(input);
     }
 }

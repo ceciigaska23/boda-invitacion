@@ -25,6 +25,7 @@ body {
     overflow: hidden;
     position: relative;
     border: 1px solid rgba(255, 255, 255, 0.8);
+    transition: all 0.5s ease; /* Transición suave */
 }
 
 .music-controls {
@@ -536,18 +537,6 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 10px;
-}
-
-/* Animación de entrada para la invitación */
-.invitation-container {
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 1s ease-out, transform 1s ease-out;
-}
-
-.invitation-container.visible {
-    opacity: 1;
-    transform: translateY(0);
 }
 
 /* Estilos para la pantalla de bienvenida */
