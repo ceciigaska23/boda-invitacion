@@ -163,7 +163,7 @@ async function searchGuest() {
     try {
         const url = `${GOOGLE_SCRIPT_URL}?action=search&searchName=${encodeURIComponent(searchName)}`;
         console.log(url);
-        const response = await fetch(`${GOOGLE_SCRIPT_URL}${encodeURIComponent('https://script.google.com/macros/s/AKfycbzZ4DaRpZTTah0Ka8NTEKahDOJL0vrDoroHp00Y3i85iqc_8z1GRwbpep3dg3TEV0Q4/exec')}`);
+        const response = await fetch(`${GOOGLE_SCRIPT_URL}${encodeURIComponent('https://script.google.com/macros/s/AKfycbyWZuWmU83405ZGK-5-Pq_R5lP5rO9rYxwWh4HjBKLbhE8-lu2FSaEErVkoocwH7P_7/exec')}`);
         console.log(response);
         
         if (!response.ok) {
